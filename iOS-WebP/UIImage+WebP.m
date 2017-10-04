@@ -85,7 +85,14 @@ static void free_image_data(void *info, const void *data, size_t size)
     pic.height = (int)webPImageHeight;
     pic.colorspace = WEBP_YUV420;
     
-    WebPPictureImportRGBA(&pic, webPImageData, (int)webPBytesPerRow);
+    // Check source image for RGB/BGR order
+    CGBitmapInfo info = CGImageGetBitmapInfo(image.CGImage);
+    BOOL isRGBOrder =  ((info & kCGBitmapByteOrderMask) == kCGBitmapByteOrderDefault);
+    if (isRGBOrder) {
+        WebPPictureImportRGBA(&pic, webPImageData, (int)webPBytesPerRow);
+    } else {
+        WebPPictureImportBGRA(&pic, webPImageData, (int)webPBytesPerRow);
+    }
     WebPPictureARGBToYUVA(&pic, WEBP_YUV420);
     WebPCleanupTransparentArea(&pic);
     
